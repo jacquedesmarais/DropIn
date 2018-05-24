@@ -1,0 +1,6 @@
+framework module Pods_DropInUITests {
+  umbrella header "Pods-DropInUITests-umbrella.h"
+
+  export *
+  module * { export * }
+}
