@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "3CF5BE692367EDC3C04C3A63D7D1BE76"
+               BlueprintIdentifier = "E0F616FD058C4B1CFF1365678BABC38D"
                BuildableName = "Braintree-Drop-In-Localization.bundle"
                BlueprintName = "Braintree-Braintree-Drop-In-Localization"
                ReferencedContainer = "container:Pods.xcodeproj">
@@ -26,7 +26,6 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      language = ""
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
@@ -37,7 +36,6 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      language = ""
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
@@ -47,7 +45,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "3CF5BE692367EDC3C04C3A63D7D1BE76"
+            BlueprintIdentifier = "E0F616FD058C4B1CFF1365678BABC38D"
             BuildableName = "Braintree-Drop-In-Localization.bundle"
             BlueprintName = "Braintree-Braintree-Drop-In-Localization"
             ReferencedContainer = "container:Pods.xcodeproj">

@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "0F364141B0583C1F2E53D0A525548E82"
+               BlueprintIdentifier = "A613C7E7A463C42EB4EE32C2FD043F1D"
                BuildableName = "Pods_DropInTests.framework"
                BlueprintName = "Pods-DropInTests"
                ReferencedContainer = "container:Pods.xcodeproj">
@@ -26,7 +26,6 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      language = ""
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
@@ -37,7 +36,6 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      language = ""
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
@@ -47,7 +45,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "0F364141B0583C1F2E53D0A525548E82"
+            BlueprintIdentifier = "A613C7E7A463C42EB4EE32C2FD043F1D"
             BuildableName = "Pods_DropInTests.framework"
             BlueprintName = "Pods-DropInTests"
             ReferencedContainer = "container:Pods.xcodeproj">

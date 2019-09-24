@@ -9,7 +9,7 @@
     if (!localizationBundlePath) {
         localizationBundlePath = [[NSBundle bundleForClass:[self class]] pathForResource:bundleName ofType:@"bundle"];
     }
-    
+
     return localizationBundlePath ? [NSBundle bundleWithPath:localizationBundlePath] : [NSBundle mainBundle];
 }
 
@@ -42,7 +42,7 @@
 }
 
 + (NSString *)POSTAL_CODE_PLACEHOLDER {
-    return NSLocalizedStringWithDefaultValue(@"POSTAL_CODE_PLACEHOLDER", [self localizationTable], [self localizationBundle], @"Postal Code", @"Credit card billing postal code field placeholder");
+    return NSLocalizedStringWithDefaultValue(@"POSTAL_CODE_PLACEHOLDER", [self localizationTable], [self localizationBundle], @"Zip Code", @"Credit card billing postal code field placeholder");
 }
 
 + (NSString *)TOP_LEVEL_ERROR_ALERT_VIEW_OK_BUTTON_TEXT {

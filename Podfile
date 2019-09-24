@@ -1,5 +1,5 @@
 # Uncomment the next line to define a global platform for your project
-# platform :ios, '9.0'
+platform :ios, '9.0'
 
 target 'DropIn' do
   # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
@@ -8,6 +8,10 @@ target 'DropIn' do
   # Pods for DropIn
   pod 'Braintree'
   pod'BraintreeDropIn'
+  pod 'Braintree/PayPal'
+  pod 'BraintreeDropIn/UIKit'
+  pod 'Braintree/Apple-Pay'
+  pod 'Braintree/PaymentFlow'
 
   target 'DropInTests' do
     inherit! :search_paths

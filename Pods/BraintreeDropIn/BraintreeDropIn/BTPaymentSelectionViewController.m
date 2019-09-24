@@ -18,6 +18,12 @@
 #import <BraintreeCard/BraintreeCard.h>
 #endif
 
+#if __has_include("BraintreePayPal.h")
+#import "BraintreePayPal.h"
+#else
+#import <BraintreePayPal/BraintreePayPal.h>
+#endif
+
 #if __has_include("BraintreeApplePay.h")
 #define __BT_APPLE_PAY
 #import "BraintreeApplePay.h"
@@ -41,16 +47,17 @@
 @property (nonatomic, strong) NSLayoutConstraint *savedPaymentMethodsCollectionViewConstraint;
 @property (nonatomic, strong) UILabel *paymentOptionsHeader;
 @property (nonatomic, strong) UILabel *vaultedPaymentsHeader;
+@property (nonatomic, strong) UIButton *vaultedPaymentsEditButton;
 @property (nonatomic, strong) UICollectionView *savedPaymentMethodsCollectionView;
 @end
 
 @implementation BTPaymentSelectionViewController
 
-- (id)init
-{
+static BOOL _vaultedCardAppearAnalyticSent = NO;
+
+- (id)init {
     self = [super init];
-    if (self)
-    {
+    if (self) {
         self.paymentMethodNonces = @[];
         self.paymentOptionsData = @[@(BTUIKPaymentOptionTypePayPal), @(BTUIKPaymentOptionTypeUnknown)];
     }
@@ -119,12 +126,34 @@
     self.vaultedPaymentsHeader.translatesAutoresizingMaskIntoConstraints = NO;
 
     self.vaultedPaymentsLabelContainerStackView = [self newStackView];
+    self.vaultedPaymentsLabelContainerStackView.axis  = UILayoutConstraintAxisHorizontal;
     self.vaultedPaymentsLabelContainerStackView.layoutMargins = UIEdgeInsetsMake(0, [BTUIKAppearance horizontalFormContentPadding], 0, [BTUIKAppearance horizontalFormContentPadding]);
     self.vaultedPaymentsLabelContainerStackView.layoutMarginsRelativeArrangement = true;
 
     [self.vaultedPaymentsLabelContainerStackView addArrangedSubview:self.vaultedPaymentsHeader];
+
+    self.vaultedPaymentsEditButton = [UIButton new];
+    self.vaultedPaymentsEditButton.hidden = YES;
+    NSAttributedString *normalVaultedPaymentsEditButton = [[NSAttributedString alloc] initWithString:BTUIKLocalizedString(EDIT_ACTION)
+                                                                                          attributes:@{NSForegroundColorAttributeName:[BTUIKAppearance sharedInstance].tintColor,
+                                                                                                       NSFontAttributeName:[[BTUIKAppearance sharedInstance].font fontWithSize:UIFont.systemFontSize]}];
+    [self.vaultedPaymentsEditButton setAttributedTitle:normalVaultedPaymentsEditButton forState:UIControlStateNormal];
+    NSAttributedString *highlightVaultedPaymentsEditButton = [[NSAttributedString alloc] initWithString:BTUIKLocalizedString(EDIT_ACTION)
+                                                                                             attributes:@{NSForegroundColorAttributeName:[BTUIKAppearance sharedInstance].highlightedTintColor,
+                                                                                                          NSFontAttributeName:[[BTUIKAppearance sharedInstance].font fontWithSize:UIFont.systemFontSize]}];
+    [self.vaultedPaymentsEditButton setAttributedTitle:highlightVaultedPaymentsEditButton forState:UIControlStateHighlighted];
+    NSAttributedString *disabledVaultedPaymentsEditButton = [[NSAttributedString alloc] initWithString:BTUIKLocalizedString(EDIT_ACTION)
+                                                                                            attributes:@{NSForegroundColorAttributeName:[BTUIKAppearance sharedInstance].disabledColor,
+                                                                                                         NSFontAttributeName:[[BTUIKAppearance sharedInstance].font fontWithSize:UIFont.systemFontSize]}];
+    [self.vaultedPaymentsEditButton setAttributedTitle:disabledVaultedPaymentsEditButton forState:UIControlStateDisabled];
+    [self.vaultedPaymentsEditButton sizeToFit];
+    [self.vaultedPaymentsEditButton layoutIfNeeded];
+    [self.vaultedPaymentsEditButton addTarget:self action:@selector(vaultedPaymentsEditButtonPressed) forControlEvents:UIControlEventTouchUpInside];
+    [self.vaultedPaymentsLabelContainerStackView addArrangedSubview:self.vaultedPaymentsEditButton];
+
     [self.stackView addArrangedSubview:self.vaultedPaymentsLabelContainerStackView];
-    
+    _vaultedCardAppearAnalyticSent = NO;
+
     UICollectionViewFlowLayout *flowLayout = [[UICollectionViewFlowLayout alloc] init];
     [flowLayout setScrollDirection: UICollectionViewScrollDirectionHorizontal];
     self.savedPaymentMethodsCollectionView = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:flowLayout];
@@ -171,7 +200,6 @@
     [self showLoadingScreen:YES];
     self.stackView.hidden = YES;
     [super loadConfiguration];
-    
 }
 
 - (void)dealloc {
@@ -197,7 +225,7 @@
             if ([[BTTokenizationService sharedService] isTypeAvailable:@"PayPal"] && [self.configuration.json[@"paypalEnabled"] isTrue] && !self.dropInRequest.paypalDisabled) {
                 [activePaymentOptions addObject:@(BTUIKPaymentOptionTypePayPal)];
             }
-            
+
             BTJSON *venmoAccessToken = self.configuration.json[@"payWithVenmo"][@"accessToken"];
             if ([[BTTokenizationService sharedService] isTypeAvailable:@"Venmo"] && venmoAccessToken.isString && !self.dropInRequest.venmoDisabled) {
                 NSURLComponents *components = [NSURLComponents componentsWithString:@"com.venmo.touch.v2://x-callback-url/vzero/auth"];
@@ -210,7 +238,7 @@
             NSArray *supportedCardTypes = [self.configuration.json[@"creditCards"][@"supportedCardTypes"] asArray];
             for (NSString *supportedCardType in supportedCardTypes) {
                 BTUIKPaymentOptionType paymentOptionType = [BTUIKViewUtil paymentOptionTypeForPaymentInfoType:supportedCardType];
-                if ([BTUIKViewUtil isPaymentOptionTypeACreditCard:paymentOptionType]) {
+                if ([BTUIKViewUtil isPaymentOptionTypeACreditCard:paymentOptionType] && !self.dropInRequest.cardDisabled) {
                     // Add credit cards if they are supported
                     [activePaymentOptions addObject:@(BTUIKPaymentOptionTypeUnknown)];
                     break;
@@ -219,28 +247,28 @@
 
 #ifdef __BT_APPLE_PAY
             BTJSON *applePayConfiguration = self.configuration.json[@"applePay"];
-            if ([applePayConfiguration[@"status"] isString] && ![[applePayConfiguration[@"status"] asString] isEqualToString:@"off"] && !self.dropInRequest.applePayDisabled) {
+            if ([applePayConfiguration[@"status"] isString] && ![[applePayConfiguration[@"status"] asString] isEqualToString:@"off"] && !self.dropInRequest.applePayDisabled && self.configuration.canMakeApplePayPayments) {
                 // Short-circuits if BraintreeApplePay is not available at runtime
                 if (__BT_AVAILABLE(@"BTApplePayClient")) {
                     [activePaymentOptions addObject:@(BTUIKPaymentOptionTypeApplePay)];
                 }
             }
 #endif
-            
+
             self.paymentOptionsData = [activePaymentOptions copy];
             [self.savedPaymentMethodsCollectionView reloadData];
             [self.paymentOptionsTableView reloadData];
             if (self.paymentMethodNonces.count == 0) {
                 self.savedPaymentMethodsCollectionView.hidden = YES;
-                self.vaultedPaymentsHeader.hidden = YES;
                 self.paymentOptionsLabelContainerStackView.hidden = YES;
                 self.vaultedPaymentsLabelContainerStackView.hidden = YES;
             } else {
                 self.savedPaymentMethodsCollectionView.hidden = NO;
-                self.vaultedPaymentsHeader.hidden = NO;
                 self.paymentOptionsLabelContainerStackView.hidden = NO;
                 self.vaultedPaymentsLabelContainerStackView.hidden = NO;
                 [self.savedPaymentMethodsCollectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:([BTUIKViewUtil isLanguageLayoutDirectionRightToLeft] ? UICollectionViewScrollPositionLeft : UICollectionViewScrollPositionRight) animated:NO];
+
+                [self sendVaultedCardAppearAnalytic];
             }
             [self showLoadingScreen:NO];
             self.stackView.hidden = NO;
@@ -271,6 +299,7 @@
         if (error) {
             // no action
         } else {
+            self.vaultedPaymentsEditButton.hidden = !self.dropInRequest.vaultManager;
             self.paymentMethodNonces = [paymentMethodNonces copy];
             if (completionBlock) {
                 completionBlock();
@@ -319,14 +348,30 @@
     return spacer;
 }
 
-- (float) sheetHeight {
+- (float)sheetHeight {
     return self.paymentMethodNonces.count == 0 ? 280 : 470;
+}
+
+- (void)vaultedPaymentsEditButtonPressed {
+    if ([self.delegate respondsToSelector:@selector(editPaymentMethods:)]){
+        [self.delegate performSelector:@selector(editPaymentMethods:) withObject:self];
+    }
+}
+
+- (void)sendVaultedCardAppearAnalytic {
+    for (BTPaymentMethodNonce *nonce in self.paymentMethodNonces) {
+        if ([nonce isKindOfClass: [BTCardNonce class]] && !_vaultedCardAppearAnalyticSent){
+            [self.apiClient sendAnalyticsEvent:@"ios.dropin2.vaulted-card.appear"];
+            _vaultedCardAppearAnalyticSent = YES;
+            break;
+        }
+    }
 }
 
 #pragma mark - Protocol conformance
 #pragma mark UICollectionViewDelegate
 
--(NSInteger)numberOfSectionsInCollectionView:(__unused UICollectionView *)savedPaymentMethodsCollectionView {
+- (NSInteger)numberOfSectionsInCollectionView:(__unused UICollectionView *)savedPaymentMethodsCollectionView {
     return 1;
 }
 
@@ -347,6 +392,10 @@
     cell.descriptionLabel.attributedText = typeWithDescription;
     cell.titleLabel.text = [BTUIKViewUtil nameForPaymentMethodType:[BTUIKViewUtil paymentOptionTypeForPaymentInfoType:typeString]];
     cell.paymentOptionCardView.paymentOptionType = [BTUIKViewUtil paymentOptionTypeForPaymentInfoType:typeString];
+
+    cell.isAccessibilityElement = YES;
+    cell.accessibilityLabel = [NSString stringWithFormat:@"%@-%@", typeString, typeWithDescription.string];
+
     return cell;
 }
 
@@ -372,6 +421,10 @@
     BTUIPaymentMethodCollectionViewCell *cell = (BTUIPaymentMethodCollectionViewCell*)[savedPaymentMethodsCollectionView cellForItemAtIndexPath:indexPath];
     if (self.delegate) {
         [self.delegate selectionCompletedWithPaymentMethodType:[BTUIKViewUtil paymentOptionTypeForPaymentInfoType:cell.paymentMethodNonce.type] nonce:cell.paymentMethodNonce error:nil];
+
+        if ([cell.paymentMethodNonce isKindOfClass: [BTCardNonce class]]){
+            [self.apiClient sendAnalyticsEvent:@"ios.dropin2.vaulted-card.select"];
+        }
     }
 }
 
@@ -381,8 +434,7 @@
     return 1;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     static NSString *simpleTableIdentifier = @"BTDropInPaymentSeletionCell";
 
     BTDropInPaymentSeletionCell *cell = [tableView dequeueReusableCellWithIdentifier:simpleTableIdentifier forIndexPath:indexPath];
@@ -391,6 +443,7 @@
     cell.selectionStyle = UITableViewCellSelectionStyleDefault;
     BTUIKPaymentOptionType option = ((NSNumber*)self.paymentOptionsData[indexPath.row]).intValue;
 
+    cell.detailLabel.text = @"";
     cell.label.text = [BTUIKViewUtil nameForPaymentMethodType:option];
     if (option == BTUIKPaymentOptionTypeUnknown) {
         cell.label.text = BTUIKLocalizedString(CREDIT_OR_DEBIT_CARD_LABEL);
@@ -408,20 +461,29 @@
             [self.delegate performSelector:@selector(showCardForm:) withObject:self];
         }
     } else if (cell.type == BTUIKPaymentOptionTypePayPal) {
-        NSMutableDictionary *options = [NSMutableDictionary dictionary];
-        if (self.delegate != nil) {
-            options[BTTokenizationServiceViewPresentingDelegateOption] = self.delegate;
+        BTPayPalDriver *driver = [[BTPayPalDriver alloc] initWithAPIClient:self.apiClient];
+        driver.viewControllerPresentingDelegate = self.delegate;
+        driver.appSwitchDelegate = self.delegate;
+
+        BTPayPalRequest *payPalRequest = self.dropInRequest.payPalRequest;
+        if (payPalRequest == nil) {
+            payPalRequest = [[BTPayPalRequest alloc] init];
         }
-        if (self.dropInRequest.additionalPayPalScopes != nil) {
-            options[BTTokenizationServicePayPalScopesOption] = self.dropInRequest.additionalPayPalScopes;
+
+        // One time payment if an amount is present
+        if (payPalRequest.amount) {
+            [driver requestOneTimePayment:payPalRequest completion:^(BTPayPalAccountNonce * _Nullable payPalAccount, NSError * _Nullable error) {
+                if (self.delegate && (payPalAccount != nil || error != nil)) {
+                    [self.delegate selectionCompletedWithPaymentMethodType:BTUIKPaymentOptionTypePayPal nonce:payPalAccount error:error];
+                }
+            }];
+        } else {
+            [driver requestBillingAgreement:payPalRequest completion:^(BTPayPalAccountNonce * _Nullable payPalAccount, NSError * _Nullable error) {
+                if (self.delegate && (payPalAccount != nil || error != nil)) {
+                    [self.delegate selectionCompletedWithPaymentMethodType:BTUIKPaymentOptionTypePayPal nonce:payPalAccount error:error];
+                }
+            }];
         }
-        
-        [[BTTokenizationService sharedService] tokenizeType:@"PayPal" options:options withAPIClient:self.apiClient completion:^(BTPaymentMethodNonce * _Nullable paymentMethodNonce, NSError * _Nullable error) {
-            if (self.delegate && (paymentMethodNonce != nil || error != nil)) {
-                [self.delegate selectionCompletedWithPaymentMethodType:BTUIKPaymentOptionTypePayPal nonce:paymentMethodNonce error:error];
-            }
-        }];
-        
     } else if (cell.type == BTUIKPaymentOptionTypeVenmo) {
         NSMutableDictionary *options = [NSMutableDictionary dictionary];
         if (self.delegate != nil) {
@@ -440,7 +502,7 @@
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
--(CGFloat)tableView:(__unused UITableView *)tableView heightForRowAtIndexPath:(__unused NSIndexPath *)indexPath {
+- (CGFloat)tableView:(__unused UITableView *)tableView heightForRowAtIndexPath:(__unused NSIndexPath *)indexPath {
     return 44.0;
 }
 

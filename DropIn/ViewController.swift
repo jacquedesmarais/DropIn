@@ -11,10 +11,10 @@ import BraintreeDropIn
 import Braintree
 
 class ViewController: UIViewController {
+    var clientToken:String!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
     }
 
     override func didReceiveMemoryWarning() {
@@ -24,20 +24,54 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var amountTextField: UITextField!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
-    @IBOutlet weak var donateButton: UIButton! {
+    @IBOutlet weak var payButton: UIButton! {
         didSet {
-            donateButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: -42, bottom: 0, right: 0)
-            donateButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: -12, bottom: 0, right: 0)
-            donateButton.layer.cornerRadius = donateButton.bounds.midY
-            donateButton.layer.masksToBounds = true
+            payButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: -42, bottom: 0, right: 0)
+            payButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: -12, bottom: 0, right: 0)
+            payButton.layer.cornerRadius = payButton.bounds.midY
+            payButton.layer.masksToBounds = true
         }
     }
     
-    @IBOutlet weak var currencyLabel: UILabel! {
-        didSet {
-            currencyLabel.layer.cornerRadius = currencyLabel.bounds.midY
-            currencyLabel.layer.masksToBounds = true
+    class ViewController: UIViewController, BTViewControllerPresentingDelegate {
+
+        func paymentDriver(_ driver: Any, requestsPresentationOf viewController: UIViewController) {
+            present(viewController, animated: true, completion: nil)
         }
+        
+        func paymentDriver(_ driver: Any, requestsDismissalOf viewController: UIViewController) {
+            viewController.dismiss(animated: true, completion: nil)
+        }
+        var paymentFlowDriver: BTPaymentFlowDriver!
+        
+    }
+
+    // Optional - display and hide loading indicator UI
+    func appSwitcherWillPerformAppSwitch(_ appSwitcher: Any) {
+        showLoadingUI()
+
+        NotificationCenter.default.addObserver(self, selector: #selector(hideLoadingUI), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
+    }
+
+    func appSwitcherWillProcessPaymentInfo(_ appSwitcher: Any) {
+        hideLoadingUI()
+    }
+
+    func appSwitcher(_ appSwitcher: Any, didPerformSwitchTo target: BTAppSwitchTarget) {
+
+    }
+
+    // MARK: - Private methods
+
+    func showLoadingUI() {
+        // ...
+    }
+
+    @objc func hideLoadingUI() {
+        NotificationCenter
+            .default
+            .removeObserver(self, name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
+        // ...
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -45,36 +79,79 @@ class ViewController: UIViewController {
         amountTextField.becomeFirstResponder()
     }
     
-    let toKinizationKey = "REPLACE_THIS_WITH_YOUR_TOKENIZATION_KEY"
+    func fetchClientToken() {
+        let clientTokenURL = URL(string: "http://localhost:8000/client_token.php")!
+        let clientTokenRequest = NSMutableURLRequest(url: clientTokenURL as URL)
+        clientTokenRequest.setValue("text/plain", forHTTPHeaderField: "Accept")
+        
+        URLSession.shared.dataTask(with: clientTokenRequest as URLRequest) { (data, response, error) -> Void in
+            let clientToken = String(data: data!, encoding: String.Encoding.utf8)
+            print(clientToken!) // print client token to console
+            self.showDropIn(clientToken: clientToken!)
+            }.resume()
+    }
     
     @IBAction func pay(_ sender: Any) {
-        // Test Values
-        // Card Number: 4111111111111111
-        // Expiration: 08/2018
-        
+        fetchClientToken()
+    }
+    
+    func showDropIn(clientToken: String) {
         let request =  BTDropInRequest()
-        let dropIn = BTDropInController(authorization: toKinizationKey, request: request)
+        request.threeDSecureVerification = true
+        
+        let threeDSecureRequest = BTThreeDSecureRequest()
+        threeDSecureRequest.threeDSecureRequestDelegate = self as? BTThreeDSecureRequestDelegate
+        
+        let threeDSecureAmount = NSDecimalNumber(string: self.amountTextField.text!)
+        threeDSecureRequest.amount = threeDSecureAmount
+        threeDSecureRequest.email = "test@example.com"
+        threeDSecureRequest.versionRequested = .version2
+        
+        let address = BTThreeDSecurePostalAddress()
+        address.givenName = "Jill"
+        address.surname = "Doe"
+        address.phoneNumber = "5551234567"
+        address.streetAddress = "555 Smith St"
+        address.extendedAddress = "#2"
+        address.locality = "Chicago"
+        address.region = "IL"
+        address.postalCode = "12345"
+        address.countryCodeAlpha2 = "US"
+        threeDSecureRequest.billingAddress = address
+        
+        // Optional additional information.
+        // For best results, provide as many of these elements as possible.
+        let additionalInformation = BTThreeDSecureAdditionalInformation()
+        additionalInformation.shippingAddress = address
+        threeDSecureRequest.additionalInformation = additionalInformation
+        
+        request.threeDSecureRequest = threeDSecureRequest
+//        request.vaultManager = true
+//        request.cardholderNameSetting = .required
+        let dropIn = BTDropInController(authorization: clientToken, request: request)
         { [unowned self] (controller, result, error) in
             
             if let error = error {
                 self.show(message: error.localizedDescription)
-                
+             
             } else if (result?.isCancelled == true) {
                 self.show(message: "Transaction Cancelled")
                 
             } else if let nonce = result?.paymentMethod?.nonce, let amount = self.amountTextField.text {
                 self.sendRequestPaymentToServer(nonce: nonce, amount: amount)
+             			print(nonce)
             }
             controller.dismiss(animated: true, completion: nil)
         }
-        
-        self.present(dropIn!, animated: true, completion: nil)
+        DispatchQueue.main.async {
+        	self.present(dropIn!, animated: true, completion: nil)
+    	}
     }
     
     func sendRequestPaymentToServer(nonce: String, amount: String) {
         activityIndicator.startAnimating()
         
-        let paymentURL = URL(string: "http://localhost/donate/pay.php")!
+     let paymentURL = URL(string: "http://localhost:8000/pay.php")!
         var request = URLRequest(url: paymentURL)
         request.httpBody = "payment_method_nonce=\(nonce)&amount=\(amount)".data(using: String.Encoding.utf8)
         request.httpMethod = "POST"
@@ -84,16 +161,17 @@ class ViewController: UIViewController {
                 self?.show(message: error!.localizedDescription)
                 return
             }
-            
-            guard let result = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any], let success = result?["success"] as? Bool, success == true else {
+         
+         guard let result = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any], let success = result?["success"] as? Bool, success == true else {
                 self?.show(message: "Transaction failed. Please try again.")
                 return
             }
-            
+            	// print the result to the console
+            	print(result!);
             self?.show(message: "Successfully charged. Thanks So Much :)")
             }.resume()
     }
-    
+ 
     func show(message: String) {
         DispatchQueue.main.async {
             self.activityIndicator.stopAnimating()
@@ -104,4 +182,3 @@ class ViewController: UIViewController {
         }
     }
 }
-

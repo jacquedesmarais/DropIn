@@ -1,45 +1,53 @@
 PODS:
-  - Braintree (4.15.0):
-    - Braintree/Card (= 4.15.0)
-    - Braintree/Core (= 4.15.0)
-    - Braintree/PayPal (= 4.15.0)
-    - Braintree/UI (= 4.15.0)
-  - Braintree/Card (4.15.0):
+  - Braintree (4.26.3):
+    - Braintree/Card (= 4.26.3)
+    - Braintree/Core (= 4.26.3)
+    - Braintree/PayPal (= 4.26.3)
+    - Braintree/UI (= 4.26.3)
+  - Braintree/Apple-Pay (4.26.3):
     - Braintree/Core
-  - Braintree/Core (4.15.0)
-  - Braintree/PaymentFlow (4.15.0):
+  - Braintree/Card (4.26.3):
+    - Braintree/Core
+  - Braintree/Core (4.26.3)
+  - Braintree/PaymentFlow (4.26.3):
     - Braintree/Card
     - Braintree/Core
-  - Braintree/PayPal (4.15.0):
+    - Braintree/PayPalOneTouch
+  - Braintree/PayPal (4.26.3):
     - Braintree/Core
     - Braintree/PayPalOneTouch
-  - Braintree/PayPalDataCollector (4.15.0):
+  - Braintree/PayPalDataCollector (4.26.3):
     - Braintree/Core
     - Braintree/PayPalUtils
-  - Braintree/PayPalOneTouch (4.15.0):
+  - Braintree/PayPalOneTouch (4.26.3):
     - Braintree/Core
     - Braintree/PayPalDataCollector
     - Braintree/PayPalUtils
-  - Braintree/PayPalUtils (4.15.0)
-  - Braintree/UI (4.15.0):
+  - Braintree/PayPalUtils (4.26.3)
+  - Braintree/UI (4.26.3):
     - Braintree/Card
     - Braintree/Core
-  - Braintree/UnionPay (4.15.0):
+  - Braintree/UnionPay (4.26.3):
     - Braintree/Card
     - Braintree/Core
-  - BraintreeDropIn (6.2.0):
-    - BraintreeDropIn/DropIn (= 6.2.0)
-  - BraintreeDropIn/DropIn (6.2.0):
-    - Braintree/Card (~> 4.11)
-    - Braintree/Core (~> 4.11)
-    - Braintree/PaymentFlow (~> 4.11)
-    - Braintree/UnionPay (~> 4.11)
+  - BraintreeDropIn (7.3.0):
+    - BraintreeDropIn/DropIn (= 7.3.0)
+  - BraintreeDropIn/DropIn (7.3.0):
+    - Braintree/Card (~> 4.26.1)
+    - Braintree/Core (~> 4.26.1)
+    - Braintree/PaymentFlow (~> 4.26.1)
+    - Braintree/PayPal (~> 4.26.1)
+    - Braintree/UnionPay (~> 4.26.1)
     - BraintreeDropIn/UIKit
-  - BraintreeDropIn/UIKit (6.2.0)
+  - BraintreeDropIn/UIKit (7.3.0)
 
 DEPENDENCIES:
   - Braintree
+  - Braintree/Apple-Pay
+  - Braintree/PaymentFlow
+  - Braintree/PayPal
   - BraintreeDropIn
+  - BraintreeDropIn/UIKit
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -47,9 +55,9 @@ SPEC REPOS:
     - BraintreeDropIn
 
 SPEC CHECKSUMS:
-  Braintree: 5f10816f455ffd79c411e6d22a177846971f3677
-  BraintreeDropIn: 4e80bce4bc2b430f2fb1af0cd13ff3223d2758d3
+  Braintree: b90c685c851aea899eeae22f8cf708e906c384ff
+  BraintreeDropIn: 1cfb2ea86b9b5c7685406f9ff579f5dc74853db1
 
-PODFILE CHECKSUM: 5676a250146ed65efed7d4f7eda03401f70eb4f6
+PODFILE CHECKSUM: 13e493687099e81d3efcb35306bffb833fbb4907
 
-COCOAPODS: 1.5.2
+COCOAPODS: 1.5.3

@@ -14,6 +14,11 @@
         _cardNetwork = cardNetwork;
         _lastTwo = lastTwo;
         _binData = [[BTBinData alloc] initWithJSON:cardJSON[@"binData"]];
+        if ([cardJSON[@"details"][@"bin"] asString]) {
+            _bin = [cardJSON[@"details"][@"bin"] asString];
+        } else if ([cardJSON[@"bin"] asString]) {
+            _bin = [cardJSON[@"bin"] asString];
+        }
         _threeDSecureInfo = [[BTThreeDSecureInfo alloc] initWithJSON:cardJSON[@"threeDSecureInfo"]];
     }
     return self;
@@ -39,6 +44,10 @@
             return @"Maestro";
         case BTCardNetworkUnionPay:
             return @"UnionPay";
+        case BTCardNetworkHiper:
+            return @"Hiper";
+        case BTCardNetworkHipercard:
+            return @"Hipercard";
         case BTCardNetworkSolo:
             return @"Solo";
         case BTCardNetworkSwitch:
@@ -62,6 +71,8 @@
                               @"maestro": @(BTCardNetworkMaestro),
                               @"mastercard": @(BTCardNetworkMasterCard),
                               @"jcb": @(BTCardNetworkJCB),
+                              @"hiper": @(BTCardNetworkHiper),
+                              @"hipercard": @(BTCardNetworkHipercard),
                               @"laser": @(BTCardNetworkLaser),
                               @"solo": @(BTCardNetworkSolo),
                               @"switch": @(BTCardNetworkSwitch),

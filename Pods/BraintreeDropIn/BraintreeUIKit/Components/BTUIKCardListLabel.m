@@ -18,7 +18,7 @@
     if (self) {
         self.numberOfLines = 0;
         self.textAlignment = NSTextAlignmentCenter;
-        
+
         self.emphasisedPaymentOption = BTUIKPaymentOptionTypeUnknown;
         self.availablePaymentOptionAttachments = @[];
 
@@ -27,20 +27,19 @@
     return self;
 }
 
-- (UIImage *) imageWithView:(UIView *)view
-{
+- (UIImage *) imageWithView:(UIView *)view {
     UIGraphicsBeginImageContextWithOptions(view.bounds.size, NO, 0.0);
     [view.layer renderInContext:UIGraphicsGetCurrentContext()];
-    
+
     UIImage * img = UIGraphicsGetImageFromCurrentImageContext();
-    
+
     UIGraphicsEndImageContext();
-    
+
     return img;
 }
 
 - (void)setAvailablePaymentOptions:(NSArray *)availablePaymentOptions {
-    _availablePaymentOptions = [[NSSet setWithArray:availablePaymentOptions] allObjects];
+    _availablePaymentOptions = [NSOrderedSet orderedSetWithArray:availablePaymentOptions].array;
     if ([BTUIKViewUtil isLanguageLayoutDirectionRightToLeft]) {
         _availablePaymentOptions = [[_availablePaymentOptions reverseObjectEnumerator] allObjects];
     }
@@ -51,33 +50,32 @@
 - (void)updateAppearance {
     NSMutableAttributedString *at = [[NSMutableAttributedString alloc] initWithString:@""];
     NSMutableArray *attachments = [NSMutableArray new];
-    BTUIKPaymentOptionCardView* hint = [BTUIKPaymentOptionCardView new];
+    BTUIKPaymentOptionCardView *hint = [BTUIKPaymentOptionCardView new];
     hint.frame = CGRectMake(0, 0, [BTUIKAppearance smallIconWidth], [BTUIKAppearance smallIconHeight]);
 
-    for(NSNumber *paymentType in self.availablePaymentOptions) {
+    for (NSUInteger i = 0; i < self.availablePaymentOptions.count; i++) {
         NSTextAttachment *composeAttachment = [NSTextAttachment new];
-        BTUIKPaymentOptionType paymentOption = ((NSNumber*)paymentType).intValue;
+        BTUIKPaymentOptionType paymentOption = ((NSNumber*)self.availablePaymentOptions[i]).intValue;
         hint.paymentOptionType = paymentOption;
         [hint setNeedsLayout];
         [hint layoutIfNeeded];
-        UIImage* composeImage = [self imageWithView:hint];
+        UIImage *composeImage = [self imageWithView:hint];
         composeImage.accessibilityLabel = [BTUIKViewUtil nameForPaymentMethodType:paymentOption];
         [attachments addObject:composeAttachment];
         composeAttachment.image = composeImage;
         [at appendAttributedString:[NSAttributedString attributedStringWithAttachment:composeAttachment]];
-        [at appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@" "]];
-        
+        [at appendAttributedString:[[NSMutableAttributedString alloc]
+                                    initWithString: i < self.availablePaymentOptions.count - 1? @" " : @""]];
     }
     self.attributedText = at;
     self.availablePaymentOptionAttachments = attachments;
 }
 
-- (void)emphasizePaymentOption:(BTUIKPaymentOptionType)paymentOption
-{
+- (void)emphasizePaymentOption:(BTUIKPaymentOptionType)paymentOption {
     if (paymentOption == self.emphasisedPaymentOption) {
         return;
     }
-    
+
     [self updateAppearance];
     for (NSUInteger i = 0; i < self.availablePaymentOptions.count; i++) {
         BTUIKPaymentOptionType option = ((NSNumber*)self.availablePaymentOptions[i]).intValue;
@@ -86,9 +84,15 @@
         UIGraphicsBeginImageContextWithOptions(attachment.image.size, NO, attachment.image.scale);
         [attachment.image drawAtPoint:CGPointZero blendMode:kCGBlendModeNormal alpha:newAlpha];
         UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-        image.accessibilityLabel = [BTUIKViewUtil nameForPaymentMethodType:paymentOption];
         UIGraphicsEndImageContext();
         attachment.image = image;
+
+        // Update accessibility label for highlighted cards
+        if (paymentOption == option) {
+            image.accessibilityLabel = [BTUIKViewUtil nameForPaymentMethodType:paymentOption];
+        } else if (paymentOption == BTUIKPaymentOptionTypeUnknown) {
+            image.accessibilityLabel = [BTUIKViewUtil nameForPaymentMethodType:((NSNumber*)self.availablePaymentOptions[i]).intValue];
+        }
     }
     self.emphasisedPaymentOption = paymentOption;
     [self setNeedsDisplay];

@@ -27,17 +27,19 @@
 #import <BraintreePaymentFlow/BraintreePaymentFlow.h>
 #endif
 
-@interface BTCardFormViewController () <BTViewControllerPresentingDelegate>
+@interface BTCardFormViewController ()
 
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIView *scrollViewContentWrapper;
 @property (nonatomic, strong) UIStackView *stackView;
 @property (nonatomic, strong, readwrite) BTUIKCardNumberFormField *cardNumberField;
+@property (nonatomic, strong, readwrite) BTUIKCardholderNameFormField *cardholderNameField;
 @property (nonatomic, strong, readwrite) BTUIKExpiryFormField *expirationDateField;
 @property (nonatomic, strong, readwrite) BTUIKSecurityCodeFormField *securityCodeField;
 @property (nonatomic, strong, readwrite) BTUIKPostalCodeFormField *postalCodeField;
 @property (nonatomic, strong, readwrite) BTUIKMobileCountryCodeFormField *mobileCountryCodeField;
 @property (nonatomic, strong, readwrite) BTUIKMobileNumberFormField *mobilePhoneField;
+@property (nonatomic, strong, readwrite) BTUIKSwitchFormField *shouldVaultCardSwitchField;
 @property (nonatomic, strong) UIStackView *cardNumberErrorView;
 @property (nonatomic, strong) UIStackView *cardNumberHeader;
 @property (nonatomic, strong) UIStackView *enrollmentFooter;
@@ -94,7 +96,7 @@
     [self.navigationController.navigationBar setTitleTextAttributes:@{
                                                                       NSForegroundColorAttributeName: [BTUIKAppearance sharedInstance].primaryTextColor
                                                                       }];
-    
+
     self.scrollView = [[UIScrollView alloc] init];
     self.scrollView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.scrollView setAlwaysBounceVertical:NO];
@@ -180,6 +182,9 @@
     self.cardNumberField = [[BTUIKCardNumberFormField alloc] init];
     self.cardNumberField.delegate = self;
     self.cardNumberField.cardNumberDelegate = self;
+    self.cardholderNameField = [[BTUIKCardholderNameFormField alloc] init];
+    self.cardholderNameField.delegate = self;
+    self.cardholderNameField.isRequired = (self.dropInRequest.cardholderNameSetting == BTFormFieldRequired);
     self.expirationDateField = [[BTUIKExpiryFormField alloc] init];
     self.expirationDateField.delegate = self;
     self.securityCodeField = [[BTUIKSecurityCodeFormField alloc] init];
@@ -203,15 +208,15 @@
     [self.cardNumberHeader addArrangedSubview:cardNumberHeaderLabel];
     [BTDropInUIUtilities addSpacerToStackView:self.cardNumberHeader beforeView:cardNumberHeaderLabel size: [BTUIKAppearance verticalFormSpace]];
     [self.stackView addArrangedSubview:self.cardNumberHeader];
-    
-    self.formFields = @[self.cardNumberField, self.expirationDateField, self.securityCodeField, self.postalCodeField, self.mobileCountryCodeField, self.mobilePhoneField];
-    
+
+    self.formFields = @[self.cardNumberField, self.cardholderNameField, self.expirationDateField, self.securityCodeField, self.postalCodeField, self.mobileCountryCodeField, self.mobilePhoneField];
+
     for (NSUInteger i = 0; i < self.formFields.count; i++) {
         BTUIKFormField *formField = self.formFields[i];
         [self.stackView addArrangedSubview:formField];
         
         NSLayoutConstraint* heightConstraint = [formField.heightAnchor constraintEqualToConstant:[BTUIKAppearance formCellHeight]];
-        // Setting the prioprity is necessary to avoid autolayout errors when UIStackView rotates
+        // Setting the priority is necessary to avoid autolayout errors when UIStackView rotates
         heightConstraint.priority = UILayoutPriorityDefaultHigh;
         heightConstraint.active = YES;
         
@@ -221,16 +226,17 @@
     self.cardNumberField.formLabel.text = @"";
     [self.cardNumberField updateConstraints];
     
+    self.cardholderNameField.hidden = YES;
     self.expirationDateField.hidden = YES;
     self.securityCodeField.hidden = YES;
     self.postalCodeField.hidden = YES;
     self.mobileCountryCodeField.hidden = YES;
     self.mobilePhoneField.hidden = YES;
-    
+
     [BTDropInUIUtilities addSpacerToStackView:self.stackView beforeView:self.cardNumberField size: [BTUIKAppearance verticalFormSpace]];
-    [BTDropInUIUtilities addSpacerToStackView:self.stackView beforeView:self.expirationDateField size: [BTUIKAppearance verticalFormSpace]];
+    [BTDropInUIUtilities addSpacerToStackView:self.stackView beforeView:self.cardholderNameField size: [BTUIKAppearance verticalFormSpace]];
     [BTDropInUIUtilities addSpacerToStackView:self.stackView beforeView:self.mobileCountryCodeField size: [BTUIKAppearance verticalFormSpace]];
-    
+
     self.cardNumberFooter = [BTDropInUIUtilities newStackView];
     self.cardNumberFooter.layoutMargins = UIEdgeInsetsMake(0, [BTUIKAppearance verticalFormSpace], 0, [BTUIKAppearance verticalFormSpace]);
     self.cardNumberFooter.layoutMarginsRelativeArrangement = true;
@@ -264,6 +270,10 @@
     self.enrollmentFooter.hidden = YES;
     [self.stackView addArrangedSubview:self.enrollmentFooter];
 
+    self.shouldVaultCardSwitchField = [[BTUIKSwitchFormField alloc] initWithTitle:BTUIKLocalizedString(SAVE_CARD_LABEL)];
+    self.shouldVaultCardSwitchField.hidden = YES;
+    [self.stackView addArrangedSubview:self.shouldVaultCardSwitchField];
+
     [self setupCardIO];
 }
 
@@ -284,7 +294,11 @@
 
 - (void)updateRequiredFields {
     NSArray <NSString *> *challenges = [self.configuration.json[@"challenges"] asStringArray];
-    self.requiredFields = [NSMutableArray arrayWithArray:@[self.cardNumberField, self.expirationDateField]];
+    self.requiredFields = [NSMutableArray arrayWithObject:self.cardNumberField];
+    if (self.dropInRequest.cardholderNameSetting != BTFormFieldDisabled) {
+        [self.requiredFields addObject:self.cardholderNameField];
+    }
+    [self.requiredFields addObject:self.expirationDateField];
     if ([challenges containsObject:@"cvv"]) {
         [self.requiredFields addObject:self.securityCodeField];
     }
@@ -357,8 +371,11 @@
     if ([self.requiredFields containsObject:self.postalCodeField]) {
         card.postalCode = self.postalCodeField.postalCode;
     }
+    if (self.cardholderNameField.cardholderName.length) {
+        card.cardholderName = self.cardholderNameField.cardholderName;
+    }
     
-    card.shouldValidate = self.apiClient.tokenizationKey ? NO : YES;
+    card.shouldValidate = self.shouldVaultCardSwitchField.switchControl.isOn;
     BTCardRequest *cardRequest = [[BTCardRequest alloc] initWithCard:card];
     
     if (self.cardCapabilities != nil && self.cardCapabilities.isUnionPay && self.cardCapabilities.isSupported) {
@@ -377,29 +394,36 @@
     _collapsed = collapsed;
     dispatch_async(dispatch_get_main_queue(), ^{
         [UIView animateWithDuration:0.15 delay:0.0 options:UIViewAnimationOptionAllowAnimatedContent|UIViewAnimationOptionBeginFromCurrentState animations:^{
-            self.cardNumberFooter.hidden = !collapsed;
             self.cardNumberHeader.hidden = !collapsed;
+            self.cardholderNameField.hidden = (self.dropInRequest.cardholderNameSetting == BTFormFieldDisabled) || collapsed;
             self.expirationDateField.hidden = collapsed;
             self.securityCodeField.hidden = ![self.requiredFields containsObject:self.securityCodeField] || collapsed;
             self.postalCodeField.hidden = ![self.requiredFields containsObject:self.postalCodeField] || collapsed;
             self.mobileCountryCodeField.hidden = ![self.requiredFields containsObject:self.mobileCountryCodeField] || collapsed;
             self.mobilePhoneField.hidden = ![self.requiredFields containsObject:self.mobilePhoneField] || collapsed;
             self.enrollmentFooter.hidden = self.mobilePhoneField.hidden;
+            self.shouldVaultCardSwitchField.hidden = ![self shouldDisplaySaveCardToggle] || collapsed;
             [self updateFormBorders];
         } completion:^(__unused BOOL finished) {
             self.cardNumberFooter.hidden = !collapsed;
             self.cardNumberHeader.hidden = !collapsed;
+            self.cardholderNameField.hidden = (self.dropInRequest.cardholderNameSetting == BTFormFieldDisabled) || collapsed;
             self.expirationDateField.hidden = collapsed;
             self.securityCodeField.hidden = ![self.requiredFields containsObject:self.securityCodeField] || collapsed;
             self.postalCodeField.hidden = ![self.requiredFields containsObject:self.postalCodeField] || collapsed;
             self.mobileCountryCodeField.hidden = ![self.requiredFields containsObject:self.mobileCountryCodeField] || collapsed;
             self.mobilePhoneField.hidden = ![self.requiredFields containsObject:self.mobilePhoneField] || collapsed;
             self.enrollmentFooter.hidden = self.mobilePhoneField.hidden;
+            self.shouldVaultCardSwitchField.hidden = ![self shouldDisplaySaveCardToggle] || collapsed;
             
             [self updateFormBorders];
             [self updateSubmitButton];
         }];
     });
+}
+
+- (BOOL)shouldDisplaySaveCardToggle {
+    return self.dropInRequest.allowVaultCardOverride && self.apiClient.tokenizationKey == nil;
 }
 
 #pragma mark - Public methods
@@ -424,17 +448,17 @@
     self.cardNumberFooter.hidden = NO;
     self.cardNumberHeader.hidden = NO;
     [self.cardList emphasizePaymentOption:BTUIKPaymentOptionTypeUnknown];
+    self.shouldVaultCardSwitchField.switchControl.on = self.dropInRequest.vaultCard && self.apiClient.tokenizationKey == nil;
     [self updateFormBorders];
 }
 
 #pragma mark - Keyboard management
 
--(void)hideKeyboard {
+- (void)hideKeyboard {
     [self.view endEditing:YES];
 }
 
-- (void)keyboardWillShow:(NSNotification *)notification
-{
+- (void)keyboardWillShow:(NSNotification *)notification {
     CGRect keyboardRectInWindow = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
     CGSize keyboardSize = [self.view convertRect:keyboardRectInWindow fromView:nil].size;
     UIEdgeInsets scrollInsets = self.scrollView.contentInset;
@@ -443,8 +467,7 @@
     self.scrollView.scrollIndicatorInsets = scrollInsets;
 }
 
-- (void)keyboardWillHide:(__unused NSNotification *)notification
-{
+- (void)keyboardWillHide:(__unused NSNotification *)notification {
     UIEdgeInsets scrollInsets = self.scrollView.contentInset;
     scrollInsets.bottom = 0.0;
     self.scrollView.contentInset = scrollInsets;
@@ -466,8 +489,8 @@
     self.mobileCountryCodeField.topBorder = YES;
     self.mobileCountryCodeField.interFieldBorder = YES;
     self.mobilePhoneField.bottomBorder = YES;
-    
-    NSArray *groupedFormFields = @[self.expirationDateField, self.securityCodeField, self.postalCodeField];
+
+    NSArray *groupedFormFields = @[self.cardholderNameField, self.expirationDateField, self.securityCodeField, self.postalCodeField];
     BOOL topBorderAdded = NO;
     BTUIKFormField* lastVisibleFormField;
     for (NSUInteger i = 0; i < groupedFormFields.count; i++) {
@@ -606,38 +629,13 @@
 
             self.navigationItem.rightBarButtonItem = addCardButton;
 
-            if (self.dropInRequest.threeDSecureVerification && self.dropInRequest.amount != nil
-                && [self.configuration.json[@"threeDSecureEnabled"] isTrue]) {
-
-                BTPaymentFlowDriver *paymentFlowDriver = [[BTPaymentFlowDriver alloc] initWithAPIClient:self.apiClient];
-                paymentFlowDriver.viewControllerPresentingDelegate = self;
-
-                BTThreeDSecureRequest *request = [[BTThreeDSecureRequest alloc] init];
-                request.amount = [[NSDecimalNumber alloc] initWithString:self.dropInRequest.amount];
-                request.nonce = tokenizedCard.nonce;
-                [paymentFlowDriver startPaymentFlow:request completion:^(BTPaymentFlowResult * _Nonnull result, NSError * _Nonnull error) {
-                    if (error) {
-                        if (error.code == BTPaymentFlowDriverErrorTypeCanceled) {
-                            [self cancelTapped];
-                        } else {
-                            [self.delegate cardTokenizationCompleted:nil error:error sender:self];
-                        }
-                    } else if (result) {
-                        BTThreeDSecureResult *threeDSecureResult = (BTThreeDSecureResult *)result;
-                        [self.delegate cardTokenizationCompleted:threeDSecureResult.tokenizedCard error:error sender:self];
-                    }
-                }];
+            if (error != nil) {
+                UIAlertController *alertController = [UIAlertController alertControllerWithTitle:BTUIKLocalizedString(CARD_DETAILS_LABEL) message:BTUIKLocalizedString(REVIEW_AND_TRY_AGAIN) preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction *alertAction = [UIAlertAction actionWithTitle:BTUIKLocalizedString(TOP_LEVEL_ERROR_ALERT_VIEW_OK_BUTTON_TEXT) style:UIAlertActionStyleDefault handler:nil];
+                [alertController addAction: alertAction];
+                [navController presentViewController:alertController animated:YES completion:nil];
             } else {
-                if (error != nil) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:BTUIKLocalizedString(CARD_DETAILS_LABEL) message:BTUIKLocalizedString(REVIEW_AND_TRY_AGAIN) preferredStyle:UIAlertControllerStyleAlert];
-                        UIAlertAction *alertAction = [UIAlertAction actionWithTitle:BTUIKLocalizedString(TOP_LEVEL_ERROR_ALERT_VIEW_OK_BUTTON_TEXT) style:UIAlertActionStyleDefault handler:nil];
-                        [alertController addAction: alertAction];
-                        [navController presentViewController:alertController animated:YES completion:nil];
-                    });
-                } else {
-                    [self.delegate cardTokenizationCompleted:tokenizedCard error:error sender:self];
-                }
+                [self.delegate cardTokenizationCompleted:tokenizedCard error:error sender:self];
             }
         });
     }];
@@ -795,7 +793,7 @@
         [self cardNumberErrorHidden:self.cardNumberField.displayAsValid];
     }
     
-    // Analytics event - fires when a customer begins enterinf card information
+    // Analytics event - fires when a customer begins entering card information
     if (!self.cardEntryDidBegin && formField.text.length > 0) {
         [self.apiClient sendAnalyticsEvent:@"ios.dropin2.add-card.start"];
         self.cardEntryDidBegin = YES;
@@ -826,19 +824,19 @@
     }
 }
 
+- (BOOL)formFieldShouldReturn:(BTUIKFormField *)formField {
+    if (formField == self.cardholderNameField) {
+        [self advanceFocusFromField:formField];
+        return NO;
+    }
+
+    return YES;
+}
+
 #pragma mark UITextFieldDelegate
 
 - (BOOL)textFieldShouldReturn:(__unused UITextField *)textField {
     return YES;
-}
-
-#pragma mark BTViewControllerPresentingDelegate
-- (void)paymentDriver:(__unused id)driver requestsPresentationOfViewController:(UIViewController *)viewController {
-    [self presentViewController:viewController animated:YES completion:nil];
-}
-
-- (void)paymentDriver:(__unused id)driver requestsDismissalOfViewController:(__unused UIViewController *)viewController {
-    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

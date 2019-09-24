@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0BA4637BAC756EBB8BFD35F3 /* Pods_DropInTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E2FD535FD1B6AB58956D8035 /* Pods_DropInTests.framework */; };
 		82B2735765C92221B02807D7 /* Pods_DropInUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E70832306F35F7D8C063ED5 /* Pods_DropInUITests.framework */; };
+		BE20B7D22229E8A200DAF22B /* client_token.php in Resources */ = {isa = PBXBuildFile; fileRef = BE20B7D12229E8A200DAF22B /* client_token.php */; };
 		BE2BCB7D20B759E1001F7A06 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE2BCB7C20B759E1001F7A06 /* AppDelegate.swift */; };
 		BE2BCB7F20B759E1001F7A06 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE2BCB7E20B759E1001F7A06 /* ViewController.swift */; };
 		BE2BCB8220B759E1001F7A06 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BE2BCB8020B759E1001F7A06 /* Main.storyboard */; };
@@ -16,6 +17,7 @@
 		BE2BCB8720B759E1001F7A06 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BE2BCB8520B759E1001F7A06 /* LaunchScreen.storyboard */; };
 		BE2BCB9220B759E1001F7A06 /* DropInTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE2BCB9120B759E1001F7A06 /* DropInTests.swift */; };
 		BE2BCB9D20B759E1001F7A06 /* DropInUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE2BCB9C20B759E1001F7A06 /* DropInUITests.swift */; };
+		BEC0DD1221FB784F005629B1 /* pay.php in Resources */ = {isa = PBXBuildFile; fileRef = BEC0DD1121FB784F005629B1 /* pay.php */; };
 		BECD987A20B7643900B6C19B /* Braintree.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BECD987B20B7643900B6C19B /* Braintree.framework */; };
 		BECD987C20B7645100B6C19B /* BraintreeDropIn.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BECD987D20B7645100B6C19B /* BraintreeDropIn.framework */; };
 		C85A0D20506724511BD1704C /* Pods_DropIn.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BBF68EC4887BCD2F87013C3 /* Pods_DropIn.framework */; settings = {ATTRIBUTES = (Required, ); }; };
@@ -44,6 +46,7 @@
 		4E70832306F35F7D8C063ED5 /* Pods_DropInUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DropInUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BBF68EC4887BCD2F87013C3 /* Pods_DropIn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DropIn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B10662D7060B79C3529F1AE8 /* Pods-DropInTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DropInTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-DropInTests/Pods-DropInTests.release.xcconfig"; sourceTree = "<group>"; };
+		BE20B7D12229E8A200DAF22B /* client_token.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = client_token.php; sourceTree = "<group>"; };
 		BE2BCB7920B759E1001F7A06 /* DropIn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DropIn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE2BCB7C20B759E1001F7A06 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BE2BCB7E20B759E1001F7A06 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -58,6 +61,8 @@
 		BE2BCB9C20B759E1001F7A06 /* DropInUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropInUITests.swift; sourceTree = "<group>"; };
 		BE2BCB9E20B759E1001F7A06 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BE4A45CA20B76BF0005ECB28 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
+		BEA0FDBF22F0DCF8002F2F72 /* DropIn-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DropIn-Bridging-Header.h"; sourceTree = "<group>"; };
+		BEC0DD1121FB784F005629B1 /* pay.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = pay.php; sourceTree = "<group>"; };
 		BECD987B20B7643900B6C19B /* Braintree.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Braintree.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BECD987D20B7645100B6C19B /* BraintreeDropIn.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = BraintreeDropIn.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE7263C57951CDADFFC377E2 /* Pods-DropInUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DropInUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DropInUITests/Pods-DropInUITests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -140,6 +145,9 @@
 				BE2BCB8320B759E1001F7A06 /* Assets.xcassets */,
 				BE2BCB8520B759E1001F7A06 /* LaunchScreen.storyboard */,
 				BE2BCB8820B759E1001F7A06 /* Info.plist */,
+				BEA0FDBF22F0DCF8002F2F72 /* DropIn-Bridging-Header.h */,
+				BEC0DD1121FB784F005629B1 /* pay.php */,
+				BE20B7D12229E8A200DAF22B /* client_token.php */,
 			);
 			path = DropIn;
 			sourceTree = "<group>";
@@ -241,7 +249,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 0920;
+				LastUpgradeCheck = 1030;
 				ORGANIZATIONNAME = "Desmarais, Jacque";
 				TargetAttributes = {
 					BE2BCB7820B759E1001F7A06 = {
@@ -286,7 +294,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				BE2BCB8720B759E1001F7A06 /* LaunchScreen.storyboard in Resources */,
+				BE20B7D22229E8A200DAF22B /* client_token.php in Resources */,
 				BE2BCB8420B759E1001F7A06 /* Assets.xcassets in Resources */,
+				BEC0DD1221FB784F005629B1 /* pay.php in Resources */,
 				BE2BCB8220B759E1001F7A06 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -333,11 +343,13 @@
 			);
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-DropIn/Pods-DropIn-frameworks.sh",
+				"${PODS_ROOT}/Braintree/Frameworks/CardinalMobile.framework",
 				"${BUILT_PRODUCTS_DIR}/Braintree/Braintree.framework",
 				"${BUILT_PRODUCTS_DIR}/BraintreeDropIn/BraintreeDropIn.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CardinalMobile.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Braintree.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BraintreeDropIn.framework",
 			);
@@ -460,6 +472,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -467,6 +480,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -517,6 +531,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -524,6 +539,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -559,14 +575,22 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				"HEADER_SEARCH_PATHS[arch=*]" = (
+					"$(inherited)",
+					"non-recursive",
+				);
 				INFOPLIST_FILE = DropIn/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[arch=*]" = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = Braintree.DropIn;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/$(PROJECT_NAME)-Bridging-Header.h";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				"USER_HEADER_SEARCH_PATHS[arch=*]" = "${PODS_ROOT} recursive";
 			};
 			name = Debug;
 		};
@@ -576,13 +600,21 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				"HEADER_SEARCH_PATHS[arch=*]" = (
+					"$(inherited)",
+					"non-recursive",
+				);
 				INFOPLIST_FILE = DropIn/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = Braintree.DropIn;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/$(PROJECT_NAME)-Bridging-Header.h";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				"USER_HEADER_SEARCH_PATHS[arch=*]" = "${PODS_ROOT} recursive";
 			};
 			name = Release;
 		};

@@ -2,9 +2,20 @@
 
 @implementation BTUIKLocalizedString
 
-+ (NSBundle *)localizationBundle {
+static NSArray *customTranslations;
 
++ (NSBundle *)localizationBundle {
     static NSString * bundleName = @"Braintree-UIKit-Localization";
+    if ([[NSLocale preferredLanguages] count] > 0) {
+        NSString *language = [[NSLocale preferredLanguages] firstObject];
+        // Ignore region portion of local ID
+        language = [[[[language componentsSeparatedByString:@"_"] firstObject] componentsSeparatedByString:@"-"] firstObject];
+
+        if (customTranslations && [customTranslations containsObject:language]) {
+            return [NSBundle mainBundle];
+        }
+    }
+
     NSString *localizationBundlePath = [[NSBundle mainBundle] pathForResource:bundleName ofType:@"bundle"];
     if (!localizationBundlePath) {
         localizationBundlePath = [[NSBundle bundleForClass:[self class]] pathForResource:bundleName ofType:@"bundle"];
@@ -18,6 +29,10 @@
 }
 
 #pragma mark Localization helpers
+
++ (void)setCustomTranslations:(NSArray *)locales {
+    customTranslations = [locales copy];
+}
 
 + (NSString *)insertIntoLocalizedString:(NSString *)string replacement:(NSString* )replacement {
     return [self insertIntoLocalizedString:string replacement:replacement token:@"%s"];
@@ -209,7 +224,7 @@
 }
 
 + (NSString *)POSTAL_CODE_PLACEHOLDER {
-    return NSLocalizedStringWithDefaultValue(@"POSTAL_CODE_PLACEHOLDER", [self localizationTable], [self localizationBundle], @"Postal Code", @"POSTAL_CODE_PLACEHOLDER");
+    return NSLocalizedStringWithDefaultValue(@"POSTAL_CODE_PLACEHOLDER", [self localizationTable], [self localizationBundle], @"Zip Code", @"POSTAL_CODE_PLACEHOLDER");
 }
 
 + (NSString *)MOBILE_NUMBER_LABEL {
@@ -230,6 +245,14 @@
 
 + (NSString *)EXPIRY_PLACEHOLDER_TWO_DIGIT_YEAR {
     return NSLocalizedStringWithDefaultValue(@"EXPIRY_PLACEHOLDER_TWO_DIGIT_YEAR", [self localizationTable], [self localizationBundle], @"MM / YY", @"EXPIRY_PLACEHOLDER_TWO_DIGIT_YEAR");
+}
+
++ (NSString *)CARDHOLDER_NAME_LABEL {
+    return NSLocalizedStringWithDefaultValue(@"CARDHOLDER_NAME_LABEL", [self localizationTable], [self localizationBundle], @"Cardholder Name", @"CARDHOLDER_NAME_LABEL");
+}
+
++ (NSString *)SAVE_CARD_LABEL {
+    return NSLocalizedStringWithDefaultValue(@"SAVE_CARD_LABEL", [self localizationTable], [self localizationBundle], @"Save card", @"SAVE_CARD_LABEL");
 }
 
 
@@ -267,6 +290,14 @@
 
 + (NSString *)CARD_TYPE_UNION_PAY {
     return NSLocalizedStringWithDefaultValue(@"CARD_TYPE_UNION_PAY", [self localizationTable], [self localizationBundle], @"UnionPay", @"CARD_TYPE_UNION_PAY");
+}
+
++ (NSString *)CARD_TYPE_HIPER {
+    return NSLocalizedStringWithDefaultValue(@"CARD_TYPE_HIPER", [self localizationTable], [self localizationBundle], @"Hiper", @"CARD_TYPE_HIPER");
+}
+
++ (NSString *)CARD_TYPE_HIPERCARD {
+    return NSLocalizedStringWithDefaultValue(@"CARD_TYPE_HIPERCARD", [self localizationTable], [self localizationBundle], @"Hipercard", @"CARD_TYPE_HIPERCARD");
 }
 
 + (NSString *)BRANDING_COINBASE {
